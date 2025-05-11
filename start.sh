@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# Exit early on errors
 set -eu
 
-# Python buffers stdout. Without this, you won't see what you "print" in the Activity Logs
 export PYTHONUNBUFFERED=true
 
-# Install Python 3 virtual env
 VIRTUALENV=./venv
 
+# Проверяем наличие python3 нужной версии
+if ! command -v python3 &> /dev/null; then
+    echo "Python3 не установлен. Обновите настройки Glitch."
+    exit 1
+fi
+
+# Создаем виртуальное окружение с правильной версией Python
 if [ ! -d $VIRTUALENV ]; then
   python3 -m venv $VIRTUALENV
 fi
 
-# Install pip into virtual environment
-if [ ! -f $VIRTUALENV/bin/pip ]; then
-  curl --silent --show-error --retry 5 https://bootstrap.pypa.io/pip/3.7/get-pip.py | $VIRTUALENV/bin/python
-fi
-
-# Install the requirements
+# Устанавливаем pip и зависимости
+$VIRTUALENV/bin/pip install --upgrade pip
 $VIRTUALENV/bin/pip install -r requirements.txt
 
-# Run your glorious application
+# Запускаем приложение
 $VIRTUALENV/bin/python3 server.py
