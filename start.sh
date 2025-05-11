@@ -1,26 +1,26 @@
 #!/bin/bash
 
+# Exit early on errors
 set -eu
+
+# Python buffers stdout. Without this, you won't see what you "print" in the Activity Logs
 export PYTHONUNBUFFERED=true
 
+# Install Python 3 virtual env
 VIRTUALENV=./venv
 
-# Проверяем доступность Python 3
-if ! command -v python3 &> /dev/null; then
-  echo "❌ Python3 не установлен. Добавьте '.python-version' файл с версией Python 3."
-  exit 1
+if [ ! -d $VIRTUALENV ]; then
+  python3 -m venv $VIRTUALENV
 fi
 
-# Создаем виртуальное окружение с явным указанием python3
-if [ ! -d "$VIRTUALENV" ]; then
-  echo "Создаем виртуальное окружение..."
-  python3 -m venv "$VIRTUALENV" --without-pip
-  # Устанавливаем pip вручную, если он не добавлен автоматически
-  curl -sS https://bootstrap.pypa.io/get-pip.py | "$VIRTUALENV/bin/python"
+# Install pip into virtual environment
+if [ ! -f $VIRTUALENV/bin/pip ]; then
+  curl --silent --show-error --retry 5 https://bootstrap.pypa.io/pip/3.7/get-pip.py | $VIRTUALENV/bin/python
 fi
 
-# Устанавливаем зависимости через venv/bin/pip
-"$VIRTUALENV/bin/pip" install -r requirements.txt
+# Install the requirements
+pip3 install -r requirements.txt
+python3 server.py
 
-# Запускаем приложение
-"$VIRTUALENV/bin/python3" server.py
+# Run your glorious application
+$VIRTUALENV/bin/python3 server.py
